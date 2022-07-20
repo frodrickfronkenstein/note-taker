@@ -1,17 +1,23 @@
 const router = require('express').Router();
-const fs = require('fs');
-const savedNotes = require('../db/db.json');
-const path = require("path");
+const {getNotes, createNote, validateNote} = require('../lib/notes');
+const { v4: uuidv4 } =require('uuid');
 
 router.get('/notes', (req, res) => {
-    try {
-        let notes = savedNotes;
-        res.json(notes);
-    } catch (error) {
-        res.json({ msg: "couldn't load notes" });
-    }
+    let results = getNotes();
+    res.json(results);
 });
 
+router.post('/notes', (req, res) => {
+    req.body.id = uuidv4();
 
+    if (!validateNote(req.body)) {
+        res.status(400).send('poor formatting')
+    }
+    else {
+        const note = createNote(req.body, notes);
+
+        res.json(note);
+    }
+});
 
 module.exports = router
